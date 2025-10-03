@@ -1,0 +1,25 @@
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
+public class MyServlet extends HttpServlet {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // need to install tomcat server to run this code
+        // https://tomcat.apache.org/download-11.cgi
+        // the binary -> core -> zipped
+        // unzip it and put it somewhere
+        // then run the startup.bat file in the bin folder
+        // then go to http://localhost:8080/ to see if it's working
+        // Retrieve input from HTML form
+        String userInput = request.getParameter("country");
+
+        // Assign it to a Java variable
+        String javaVariable = userInput;
+
+        // Send response back to client
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        out.println("<h2>You entered: " + javaVariable + "</h2>");
+    }
+}
