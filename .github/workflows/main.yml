@@ -12,3 +12,4 @@ jobs:
         uses: planetoftheweb/copy-to-branches@v1.2
         env:
           key: main
+          files: API_keyList.env .gitignore
