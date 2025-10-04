@@ -90,27 +90,41 @@ function threeDayAverages(dailyMap) {
   return avgMap;
 }
 
-// ── WRITE CSV ────────────────────────────────────────────────────────────────
-// zeroFill: fill missing with '0'
-function writeCsv(paramName, pivot, zeroFill = false) {
-  const header = ['month-day', ...years].join(',');
-  const rows   = Object.keys(pivot)
-    .sort((a,b) => {
-      const [am,ad] = a.split('-').map(Number);
-      const [bm,bd] = b.split('-').map(Number);
-      return am === bm ? ad - bd : am - bm;
+// ── WRITE CSV WITH SMOOTHING ────────────────────────────────────────────────
+/**
+ * Writes a pivoted CSV where each cell is the average of its value,
+ * the previous row’s value, and the next row’s value in the same column.
+ */
+function writeCsv(paramName, pivot) {
+  const dir    = path.resolve(__dirname, 'JsonData');
+  const file   = path.join(dir, `${locKey}_${paramName}.csv`);
+  const sorted = Object.keys(pivot).sort((a,b) => {
+    const [am,ad]=a.split('-').map(Number);
+    const [bm,bd]=b.split('-').map(Number);
+    return am===bm?ad-bd:am-bm;
+  });
+
+  // Build a 2D array of values [row][col]
+  const matrix = sorted.map(md =>
+    years.map(y => Number(pivot[md]?.[y] ?? 0))
+  );
+
+  // Apply centered moving average down each column
+  const smoothed = matrix.map((row, i) =>
+    row.map((val, j) => {
+      const prev = matrix[i-1]?.[j] ?? val;
+      const next = matrix[i+1]?.[j] ?? val;
+      return ((prev + val + next) / 3).toFixed(3);
     })
-    .map(md => {
-      const vals = years.map(y => {
-        const val = pivot[md][y];
-        return val != null ? val : (zeroFill ? '0' : '');
-      });
-      return [md, ...vals].join(',');
-    });
-  const dir  = path.resolve(__dirname, 'JsonData');
-  const file = path.join(dir, `${locKey}_${paramName}.csv`);
+  );
+
+  // Write CSV
+  const header = ['month-day', ...years].join(',');
+  const rows = sorted.map((md, i) =>
+    [md, ...smoothed[i]].join(',')
+  );
   fs.writeFileSync(file, [header, ...rows].join('\n'));
-  console.log(`✅ Wrote ${path.basename(file)}`);
+  console.log(`✅ Wrote smoothed ${path.basename(file)}`);
 }
 
 // ── MAIN ────────────────────────────────────────────────────────────────────
