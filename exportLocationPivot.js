@@ -28,12 +28,11 @@ if (!fs.existsSync(userDataPath)) {
   console.error('❌ Missing JsonData/user_data.json');
   process.exit(1);
 }
-const user = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
-const locKey = user.city.replace(/\s+/g, '_');            // e.g. ’Aïn_Abid
-const address= `${user.city}, ${user.country}`;            // "’Aïn Abid, Algeria"
+const user   = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
+const locKey = user.city.replace(/\s+/g, '_');                    // e.g. ’Aïn_Abid
+const address= `${user.city}, ${user.country}`;                    // "’Aïn Abid, Algeria"
 
 // ── GEOCODING FUNCTION ───────────────────────────────────────────────────────
-// Replace with your geocoding service
 async function geocode(addr) {
   const res = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
     params: { address: addr, key: process.env.GOOGLE_MAPS_API_KEY }
@@ -65,15 +64,30 @@ async function fetchParams(lat, lon) {
 // ── BUILD PIVOT ──────────────────────────────────────────────────────────────
 function buildPivot(map) {
   const pivot = {};
-  for (const [ymd, v] of Object.entries(map)) {
-    const mm = ymd.slice(4,6);
-    const dd = ymd.slice(6,8);
-    const md = `${mm}-${dd}`;
+  Object.entries(map).forEach(([ymd, v]) => {
+    // ymd here may be YYYYMMDD of first day of each 3-day block
+    const md = `${ymd.slice(4,6)}-${ymd.slice(6,8)}`; // "MM-DD"
     const yr = ymd.slice(0,4);
-    pivot[md] ||= {};
+    if (!pivot[md]) pivot[md] = {};
     pivot[md][yr] = v;
-  }
+  });
   return pivot;
+}
+
+// ── 3-DAY AVERAGE HELPER ─────────────────────────────────────────────────────
+/**
+ * Given a map YYYYMMDD→number, returns YYYYMMDD→3-day average,
+ * keyed by the first date of each consecutive triplet.
+ */
+function threeDayAverages(dailyMap) {
+  const dates = Object.keys(dailyMap).sort();
+  const avgMap = {};
+  for (let i = 0; i + 2 < dates.length; i += 3) {
+    const group = dates.slice(i, i + 3);             // e.g. ['20140101','20140102','20140103']
+    const sum   = group.reduce((s, d) => s + (dailyMap[d] ?? 0), 0);
+    avgMap[group[0]] = parseFloat((sum / 3).toFixed(3)); // key by first date
+  }
+  return avgMap;
 }
 
 // ── WRITE CSV ────────────────────────────────────────────────────────────────
@@ -102,23 +116,33 @@ function writeCsv(paramName, pivot, zeroFill = false) {
 // ── MAIN ────────────────────────────────────────────────────────────────────
 ;(async () => {
   if (!process.env.GOOGLE_MAPS_API_KEY) {
-    console.error('❌ Set GOOGLE_API_KEY in .env');
+    console.error('❌ Set GOOGLE_MAPS_API_KEY in .env');
     process.exit(1);
   }
 
-  console.log(`\n📍 Geocoding "${address}"`);
+  console.log(`📍 Geocoding "${address}"`);
   const { lat, lon } = await geocode(address);
 
   console.log(`⏳ Fetching NASA POWER data for ${locKey}`);
   const params = await fetchParams(lat, lon);
 
-  const windPivot = buildPivot(params.WS2M);
-  const tempPivot = buildPivot(params.T2M);
-  const rainPivot = buildPivot(params.PRECTOTCORR);
+  // 1) Compute raw daily and 3-day average maps
+  const rawWind  = params.WS2M;
+  const rawTemp  = params.T2M;
+  const rawRain  = params.PRECTOTCORR;
+  const wind3Day = threeDayAverages(rawWind);
+  const temp3Day = threeDayAverages(rawTemp);
+  const rain3Day = threeDayAverages(rawRain);
 
-  writeCsv('wind', windPivot, true);
-  writeCsv('temp',  tempPivot, true);
-  writeCsv('rain',  rainPivot, true);
+  // 2) Pivot each map so rows are 3-day blocks by month-day
+  const windPivot   = buildPivot(wind3Day);
+  const tempPivot   = buildPivot(temp3Day);
+  const rainPivot   = buildPivot(rain3Day);
 
-  console.log('\nExport complete.');
+  // 3) Write only the 3-day grouped CSVs
+  writeCsv('wind3day', windPivot, true);
+  writeCsv('temp3day', tempPivot, true);
+  writeCsv('rain3day', rainPivot, true);
+
+  console.log('\n3-day grouped export complete.');
 })();
