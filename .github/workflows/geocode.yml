@@ -1,0 +1,23 @@
+name: Geocode Dispatch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  geocode:
+    name: Run Geocode Job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install axios
+
+      - name: Run Geocode
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: node geocode.js "1600 Amphitheatre Parkway, Mountain View, CA"
