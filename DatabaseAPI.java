@@ -116,6 +116,7 @@ public class DatabaseAPI{
 
     private void proxyFix(){
 
+        
         System.setProperty("java.net.useSystemProxies", "true");
         System.setProperty("java.net.preferIPv4Stack", "true");
 
@@ -156,6 +157,10 @@ public class DatabaseAPI{
             try {
                 proxyFix();
                 conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(true);
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                conn.setRequestProperty("Accept", "application/json");
+
                 conn.setDoOutput(true);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Accept", "application/json");
