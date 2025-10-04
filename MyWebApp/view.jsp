@@ -13,6 +13,7 @@
             color: #333;
         }
     </style>
+    <link rel='stylesheet' type='text/css' media='screen' href='style.css'>
 </head>
 
 <body>
