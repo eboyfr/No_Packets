@@ -1,47 +1,74 @@
-const axios = require('axios');
+const path = require('path');
+const result = require('dotenv').config({
+  path: path.resolve(__dirname, '.env')
+});
 
-if (!process.env.GOOGLE_MAPS_API_KEY) {
+if (result.error) {
+  console.error('❌ Failed to load .env:', result.error);
+} else {
+  console.log('✅ Loaded .env from', result.parsed);
+}
+
+console.log('DEBUG process.cwd():', process.cwd());
+console.log('DEBUG __dirname:', __dirname);
+console.log('DEBUG Keys with GOOGLE:', 
+  Object.keys(process.env).filter(k => k.includes('GOOGLE'))
+);
+
+const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+if (!API_KEY) {
   console.error('❌ GOOGLE_MAPS_API_KEY environment variable is not set');
   process.exit(1);
 }
 
+
+/*require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+
+// 1. Read API key
 const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-const GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
+if (!API_KEY) {
+  console.error('GOOGLE_MAPS_API_KEY missing in .env');
+  process.exit(1);
+*/
 
-/**
- * Convert a place name or address into coordinates.
- * @param {string} place
- * @returns {Promise<{ latitude: number, longitude: number, formatted_address: string }>}
- */
-async function getCoordinates(place) {
-  try {
-    const response = await axios.get(GEOCODE_URL, {
-      params: { address: place, key: API_KEY },
-      timeout: 10000
-    });
-    const data = response.data;
-
-    if (data.status === 'OK' && data.results.length) {
-      const { lat, lng } = data.results[0].geometry.location;
-      const formatted = data.results[0].formatted_address;
-      return { latitude: lat, longitude: lng, formatted_address: formatted };
-    }
-
-    throw new Error(`Geocoding failed: ${data.status}`);
-  } catch (err) {
-    throw new Error(`Request error: ${err.message}`);
-  }
+// 2. Geocode function
+async function geocode(address) {
+  const { data } = await axios.get(
+    'https://maps.googleapis.com/maps/api/geocode/json',
+    { params: { address, key: API_KEY } }
+  );
+  if (!data.results.length) throw new Error('No results for address');
+  return data.results[0].geometry.location; // { lat, lng }
 }
 
-// Example usage
+// 3. Update .env
+function updateEnv(vars) {
+  const envPath = path.resolve(__dirname, '.env');
+  const lines = fs.existsSync(envPath)
+    ? fs.readFileSync(envPath, 'utf8').split(/\r?\n/)
+    : [];
+  const map = Object.fromEntries(lines.filter(Boolean).map(l => l.split('=')));
+  Object.assign(map, vars);
+  fs.writeFileSync(
+    envPath,
+    Object.entries(map).map(([k,v]) => `${k}=${v}`).join('\n') + '\n'
+  );
+}
+
+// 4. Main execution
 (async () => {
+  const address = process.argv[2] || '1600 Amphitheatre Parkway, Mountain View, CA';
   try {
-    const place = process.argv[2] || 'Eiffel Tower, Paris';
-    const { latitude, longitude, formatted_address } = await getCoordinates(place);
-    console.log(`✅ ${formatted_address}`);
-    console.log(`📍 Latitude: ${latitude}, Longitude: ${longitude}`);
-  } catch (error) {
-    console.error(`❌ ${error.message}`);
+    const { lat, lng } = await geocode(address);
+    process.env.DEFAULT_LAT = String(lat);
+    process.env.DEFAULT_LNG = String(lng);
+    updateEnv({ DEFAULT_LAT: lat, DEFAULT_LNG: lng });
+    console.log(`Lat: ${lat}, Lng: ${lng} → exported and saved to .env`);
+  } catch (err) {
+    console.error(err.message);
     process.exit(1);
   }
 })();
