@@ -10,11 +10,26 @@
 </head>
 <body>
     <h1>Weather App</h1>
+    <img src="Logo.png" alt="Logo">
     <div id="questionbox" style="max-width: 400px; margin: 40px auto; padding: 24px; background: rgba(255,255,255,0.85); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <h2>Enter Location and Time</h2>
     <form action="MyServlet" method="post">
         <label for="country">Country</label>
-        <input type="text" id="country" name="country"><br><br>
+        <input list="countries" id="country" name="country" autocomplete="off">
+        <datalist id="countries"></datalist>
+        <script>
+        fetch('countries.json')
+          .then(response => response.json())
+          .then(countries => {
+            const datalist = document.getElementById('countries');
+            countries.forEach(country => {
+              const option = document.createElement('option');
+              option.value = country;
+              datalist.appendChild(option);
+            });
+          });
+        </script>
+        <br><br>
         <label for="city">City</label>
         <input type="text" id="city" name="city"><br><br>
         <label for="date">Date:</label>
@@ -25,4 +40,4 @@
     </form>
     </div>
 </body>
-</html>>
+</html>

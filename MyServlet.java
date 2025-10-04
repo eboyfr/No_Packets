@@ -22,12 +22,22 @@ public class MyServlet extends HttpServlet {
             LocalDate javaVariable3 = date;
             LocalTime javaVariable4 = time;
             // Send response back to client
-            response.setContentType("text/html");
-            PrintWriter out = response.getWriter();
-            out.println("<h2>Country: " + javaVariable + "</h2>");
-            out.println("<h2>City: " + javaVariable2 + "</h2>");
-            out.println("<h2>Date: " + javaVariable3 + "</h2>");
-            out.println("<h2>Time: " + javaVariable4 + "</h2>");
+
+            // Set attributes for JSP
+            request.setAttribute("country", Country);
+            request.setAttribute("city", City);
+            request.setAttribute("date", date);
+            request.setAttribute("time", time);
+
+            // Forward to view.jsp
+            RequestDispatcher dispatcher = request.getRequestDispatcher("view.jsp");
+            dispatcher.forward(request, response);
+            //response.setContentType("text/html");
+            //PrintWriter out = response.getWriter();
+            // out.println("<h2>Country: " + javaVariable + "</h2>");
+            // out.println("<h2>City: " + javaVariable2 + "</h2>");
+            // out.println("<h2>Date: " + javaVariable3 + "</h2>");
+            // out.println("<h2>Time: " + javaVariable4 + "</h2>");
         } catch (Exception e) {
             System.err.println("Error occurredbb: " + e.getMessage());
             e.printStackTrace();

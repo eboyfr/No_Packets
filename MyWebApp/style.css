@@ -9,7 +9,7 @@ body {
   font-family: Arial, sans-serif;
   /* Background image (1920x1080) */
   
-  background-image: url('sources/photo/mainbackground.png');
+  background-image: url('mainbackground.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
