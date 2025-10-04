@@ -9,13 +9,16 @@ select {
   width: auto;              /* don't force full width */
   min-width: 100px;         /* optional: prevents being too tiny */
   max-width: 100%;          /* keep it responsive */
+  justify-content: center; /* center the text */
+  text-align: center;
+  text-align-last: center;
 }
 
 body {
   font-family: Arial, sans-serif;
   /* Background image (1920x1080) */
   
-  background-image: url('mainbackground.png');
+  background-image: url('Query_Load.gif');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -27,15 +30,15 @@ body {
 /* Questionbox styling. */
 #questionbox {
 
-    /* blur background effect */
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    /* / blur background effect / */
+  background: rgba(255, 255, 255, 0.010); 
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 
-  /* center and flex according to screen */
+  /* / center and flex according to screen / */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,9 +46,8 @@ body {
   text-align: center;
   position: relative;
 
-  /* size and position */
+  /* / size and position */
   width: 350px;
   height: 320px;
   padding: 0;
 }
-
