@@ -22,7 +22,8 @@ public class MyServlet extends HttpServlet {
             LocalDate javaVariable3 = date;
             LocalTime javaVariable4 = time;
             // Send response back to client
-
+            String filename = "user_" + System.currentTimeMillis() + ".json";
+            JsonCreator.createUserJson(filename, javaVariable, javaVariable2, javaVariable3, javaVariable4);
             // Set attributes for JSP
             request.setAttribute("country", Country);
             request.setAttribute("city", City);
@@ -61,5 +62,6 @@ public class MyServlet extends HttpServlet {
         // out.println("<h2>You entered: " + javaVariable + "</h2>");
     //}
 }
+
 
 }

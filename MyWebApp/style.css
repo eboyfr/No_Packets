@@ -5,6 +5,8 @@ html, body {
 
 }
 
+
+
 body {
   font-family: Arial, sans-serif;
   /* Background image (1920x1080) */
@@ -41,4 +43,10 @@ body {
   width: 350px;
   height: 320px;
   padding: 0;
+}
+
+select {
+  width: auto;              /* don't force full width */
+  min-width: 100px;         /* optional: prevents being too tiny */
+  max-width: 100%;          /* keep it responsive */
 }

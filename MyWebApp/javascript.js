@@ -22,6 +22,22 @@ window.onload = function() {
     oldInput.parentNode.replaceChild(timeSelect, oldInput);
   }
 };
+// keeps date range from today to one year from now
+document.addEventListener("DOMContentLoaded", () => {
+  const dateInput = document.getElementById("date");
+
+  const today = new Date();
+  const nextYear = new Date(today);
+  nextYear.setFullYear(today.getFullYear() + 1);
+
+  // Format to yyyy-mm-dd (the format <input type="date"> expects)
+  const format = d => d.toISOString().split("T")[0];
+
+  dateInput.min = format(today);
+  dateInput.max = format(nextYear);
+
+  console.log("Date range set:", dateInput.min, "→", dateInput.max);
+});
 
 
 
