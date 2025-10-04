@@ -16,6 +16,7 @@
 </head>
 
 <body>
+    <a href="main.html"><img src="Logo.png" alt="Logo" style="position: relative; top: 10px; left: 10px;"></a>
     <h2>Country: ${country}</h2>
     <h2>City: ${city}</h2>
     <h2>Date: ${date}</h2>

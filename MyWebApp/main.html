@@ -6,18 +6,21 @@
     <title>Weather App</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='style.css'>
-    
+    <script src='javascript.js'></script>
 </head>
 <body>
     <h1>Weather App</h1>
-    <img src="Logo.png" alt="Logo">
+    
+    <a href="homepage.html"><img src="Logo.png" alt="Logo" style="position: relative; top: 10px; left: 10px;"></a>
     <div id="questionbox" style="max-width: 400px; margin: 40px auto; padding: 24px; background: rgba(255,255,255,0.85); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <h2>Enter Location and Time</h2>
     <form action="MyServlet" method="post">
-        <label for="country">Country</label>
-        <input list="countries" id="country" name="country" autocomplete="off">
-        <datalist id="countries"></datalist>
-        <script>
+    <label for="country">Country:</label><br>
+    <select id ="country" name="country"></select><br><br>
+        
+        <!-- 
+     <datalist id="countries"></datalist>
+     <script>
         fetch('countries.json')
           .then(response => response.json())
           .then(countries => {
@@ -28,12 +31,13 @@
               datalist.appendChild(option);
             });
           });
-        </script>
+        </script> -->
         <br><br>
         <label for="city">City</label>
-        <input type="text" id="city" name="city"><br><br>
+        <select id="city" name="city"></select><br><br>
+        <!-- <input type="text" id="city" name="city"><br><br> -->
         <label for="date">Date:</label>
-        <input type="date" id="date" name="date">
+        <input type="date" id="date" name="date"><br><br>
         <label for="time">Time:</label>
         <input type="time" id="time" name="time"><br><br>
         <button type="submit">Submit</button>
