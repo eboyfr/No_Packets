@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Weather App</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='style.css'>
+    <script src='javascript.js'></script>
+</head>
+<body>
+    
+    <a href="homepage.html"><img src="Logo.png" alt="Logo" style="position: relative; top: 10px; left: 10px;"></a>
+    <div id="questionbox" style="max-width: 400px; margin: 40px auto; padding: 24px; background: rgba(255,255,255,0.85); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      
+    <form action="MyServlet" method="post">
+    <label for="country">Country:</label>
+    <select id ="country" name="country"></select><br><br>
+        
+        <label for="city">City</label>
+        <select id="city" name="city"></select><br><br>
+        <!-- <input type="text" id="city" name="city"><br><br> -->
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date"><br><br>
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time">
+        <button type="submit">Submit</button>
+    </form>
+    </div>
+</body>
+</html>
