@@ -8,15 +8,16 @@ public class MyServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             // Retrieve input from HTML form
-            String userInput = request.getParameter("country");
-
+            String Country = request.getParameter("country");
+            String Continent = request.getParameter("continent");
             // Assign it to a Java variable
-            String javaVariable = userInput;
-
+            String javaVariable = Country;
+            String javaVariable2 = Continent;
             // Send response back to client
             response.setContentType("text/html");
             PrintWriter out = response.getWriter();
-            out.println("<h2>You entered: " + javaVariable + "</h2>");
+            out.println("<h2>Country: " + javaVariable + "</h2>");
+            out.println("<h2>Continent: " + javaVariable2 + "</h2>");
         } catch (Exception e) {
             System.err.println("Error occurredbb: " + e.getMessage());
             e.printStackTrace();
