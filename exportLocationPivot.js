@@ -5,7 +5,7 @@ const path  = require('path');
 const axios = require('axios');
 require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
-// ── CONFIGURE RANGE HERE ─────────────────────────────────────────────────────
+// ── CONFIGURE DATE RANGE HERE ────────────────────────────────────────────────
 const startDate = '20040101';
 const endDate   = '20241231';
 
@@ -28,9 +28,8 @@ if (!fs.existsSync(userDataPath)) {
   console.error('❌ Missing JsonData/user_data.json');
   process.exit(1);
 }
-const user   = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
-const locKey = user.city.replace(/\s+/g, '_');       // e.g. ’Aïn_Abid
-const address= `${user.city}, ${user.country}`;      // "’Aïn Abid, Algeria"
+const user    = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
+const address = `${user.city}, ${user.country}`;
 
 // ── GEOCODING FUNCTION ───────────────────────────────────────────────────────
 async function geocode(addr) {
@@ -73,21 +72,21 @@ function buildPivot(map) {
   return pivot;
 }
 
-// ── WRITE DAILY CSVS ─────────────────────────────────────────────────────────
-function writeCsv(paramName, pivot) {
-  const dir    = path.resolve(__dirname, 'JsonData');
-  const file   = path.join(dir, `${locKey}_${paramName}.csv`);
+// ── WRITE TO FIXED CSV FILENAMES ────────────────────────────────────────────
+function writeFixedCsv(paramName, pivot) {
+  const dir  = path.resolve(__dirname, 'JsonData');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  // Write to e.g. 'wind.csv', 'temp.csv', 'rain.csv'
+  const file = path.join(dir, `${paramName}.csv`);
   const sorted = Object.keys(pivot).sort((a,b) => {
-    const [am,ad]=a.split('-').map(Number);
-    const [bm,bd]=b.split('-').map(Number);
+    const [am,ad] = a.split('-').map(Number);
+    const [bm,bd] = b.split('-').map(Number);
     return am === bm ? ad - bd : am - bm;
   });
   const header = ['month-day', ...years].join(',');
-  const rows   = sorted.map(md =>
-    [md, ...years.map(y => pivot[md][y] ?? '0')].join(',')
-  );
+  const rows = sorted.map(md => [md, ...years.map(y => pivot[md][y] ?? '0')].join(','));
   fs.writeFileSync(file, [header, ...rows].join('\n'));
-  console.log(`✅ Wrote ${path.basename(file)}`);
+  console.log(`✅ Overwrote ${paramName}.csv`);
 }
 
 // ── MAIN ────────────────────────────────────────────────────────────────────
@@ -100,7 +99,7 @@ function writeCsv(paramName, pivot) {
   console.log(`📍 Geocoding "${address}"`);
   const { lat, lon } = await geocode(address);
 
-  console.log(`⏳ Fetching NASA POWER data for ${locKey}`);
+  console.log(`⏳ Fetching NASA POWER data`);
   const params = await fetchParams(lat, lon);
 
   // Pivot raw daily data
@@ -108,10 +107,10 @@ function writeCsv(paramName, pivot) {
   const tempPivot = buildPivot(params.T2M);
   const rainPivot = buildPivot(params.PRECTOTCORR);
 
-  // Write only the daily CSVs
-  writeCsv('wind', windPivot);
-  writeCsv('temp', tempPivot);
-  writeCsv('rain', rainPivot);
+  // Overwrite fixed CSVs
+  writeFixedCsv('wind', windPivot);
+  writeFixedCsv('temp', tempPivot);
+  writeFixedCsv('rain', rainPivot);
 
   console.log('\nExport complete.');
 })();
