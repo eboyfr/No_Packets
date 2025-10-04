@@ -29,8 +29,8 @@ if (!fs.existsSync(userDataPath)) {
   process.exit(1);
 }
 const user   = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
-const locKey = user.city.replace(/\s+/g, '_');                    // e.g. ’Aïn_Abid
-const address= `${user.city}, ${user.country}`;                    // "’Aïn Abid, Algeria"
+const locKey = user.city.replace(/\s+/g, '_');       // e.g. ’Aïn_Abid
+const address= `${user.city}, ${user.country}`;      // "’Aïn Abid, Algeria"
 
 // ── GEOCODING FUNCTION ───────────────────────────────────────────────────────
 async function geocode(addr) {
@@ -61,11 +61,10 @@ async function fetchParams(lat, lon) {
   return res.data.properties.parameter;
 }
 
-// ── BUILD PIVOT ──────────────────────────────────────────────────────────────
+// ── BUILD PIVOT FROM RAW DAILY DATA ──────────────────────────────────────────
 function buildPivot(map) {
   const pivot = {};
   Object.entries(map).forEach(([ymd, v]) => {
-    // ymd here may be YYYYMMDD of first day of each 3-day block
     const md = `${ymd.slice(4,6)}-${ymd.slice(6,8)}`; // "MM-DD"
     const yr = ymd.slice(0,4);
     if (!pivot[md]) pivot[md] = {};
@@ -74,28 +73,7 @@ function buildPivot(map) {
   return pivot;
 }
 
-// ── 3-DAY AVERAGE HELPER ─────────────────────────────────────────────────────
-/**
- * Given a map YYYYMMDD→number, returns YYYYMMDD→3-day average,
- * keyed by the first date of each consecutive triplet.
- */
-function threeDayAverages(dailyMap) {
-  const dates = Object.keys(dailyMap).sort();
-  const avgMap = {};
-  for (let i = 0; i + 2 < dates.length; i += 3) {
-    const group = dates.slice(i, i + 3);             // e.g. ['20140101','20140102','20140103']
-    const sum   = group.reduce((s, d) => s + (dailyMap[d] ?? 0), 0);
-    avgMap[group[0]] = parseFloat((sum / 3).toFixed(3)); // key by first date
-  }
-  return avgMap;
-}
-
-// ── WRITE CSV WITH CONDITIONAL SMOOTHING ────────────────────────────────────
-/**
- * Writes a pivoted CSV where each cell is:
- * - the raw value for the 2024 column
- * - the centered 3-point average for all other years
- */
+// ── WRITE ORIGINAL DAILY CSVS ───────────────────────────────────────────────
 function writeCsv(paramName, pivot) {
   const dir    = path.resolve(__dirname, 'JsonData');
   const file   = path.join(dir, `${locKey}_${paramName}.csv`);
@@ -104,40 +82,49 @@ function writeCsv(paramName, pivot) {
     const [bm,bd]=b.split('-').map(Number);
     return am===bm?ad-bd:am-bm;
   });
+  const header = ['month-day', ...years].join(',');
+  const rows   = sorted.map(md => [md, ...years.map(y => pivot[md][y] ?? '0')].join(','));
+  fs.writeFileSync(file, [header, ...rows].join('\n'));
+  console.log(`✅ Wrote ${path.basename(file)}`);
+}
 
-  // Build raw matrix [row][col]
-  const matrix = sorted.map(md =>
-    years.map(y => Number(pivot[md]?.[y] ?? 0))
-  );
+// ── WRITE SMOOTHED 3-DAY CSVS ────────────────────────────────────────────────
+/**
+ * Writes <locKey>_<paramName>3day.csv where each cell is
+ * a centered 3-point average except 2024 retains raw values.
+ */
+function writeSmoothedCsv(paramName, pivot) {
+  const dir      = path.resolve(__dirname, 'JsonData');
+  const filename = `${locKey}_${paramName}3day.csv`;
+  const file     = path.join(dir, filename);
+  const sorted   = Object.keys(pivot).sort((a,b) => {
+    const [am,ad]=a.split('-').map(Number);
+    const [bm,bd]=b.split('-').map(Number);
+    return am===bm?ad-bd:am-bm;
+  });
 
-  // Identify the index of the 2024 column
-  const idx2024 = years.indexOf('2024');
+  // Build matrix [row][col]
+  const matrix = sorted.map(md => years.map(y => Number(pivot[md]?.[y] ?? 0)));
+  const idx2024= years.indexOf('2024');
 
-  // Apply smoothing except for 2024 column
-  const smoothed = matrix.map((row, i) =>
-    row.map((val, j) => {
-      if (j === idx2024) {
-        // keep raw for 2024
-        return val.toFixed(3);
-      }
+  // Smooth columns except 2024
+  const smoothed = matrix.map((row,i) =>
+    row.map((val,j) => {
+      if (j === idx2024) return val.toFixed(3);
       const prev = matrix[i-1]?.[j] ?? val;
       const next = matrix[i+1]?.[j] ?? val;
       return ((prev + val + next) / 3).toFixed(3);
     })
   );
 
-  // Write CSV
   const header = ['month-day', ...years].join(',');
-  const rows = sorted.map((md, i) =>
-    [md, ...smoothed[i]].join(',')
-  );
+  const rows   = sorted.map((md,i) => [md, ...smoothed[i]].join(','));
   fs.writeFileSync(file, [header, ...rows].join('\n'));
-  console.log(`✅ Wrote ${path.basename(file)}`);
+  console.log(`✅ Wrote ${filename}`);
 }
 
-
 // ── MAIN ────────────────────────────────────────────────────────────────────
-;(async () => {
+(async () => {
   if (!process.env.GOOGLE_MAPS_API_KEY) {
     console.error('❌ Set GOOGLE_MAPS_API_KEY in .env');
     process.exit(1);
@@ -149,23 +136,20 @@ function writeCsv(paramName, pivot) {
   console.log(`⏳ Fetching NASA POWER data for ${locKey}`);
   const params = await fetchParams(lat, lon);
 
-  // 1) Compute raw daily and 3-day average maps
-  const rawWind  = params.WS2M;
-  const rawTemp  = params.T2M;
-  const rawRain  = params.PRECTOTCORR;
-  const wind3Day = threeDayAverages(rawWind);
-  const temp3Day = threeDayAverages(rawTemp);
-  const rain3Day = threeDayAverages(rawRain);
+  // Pivot raw daily data
+  const windPivot = buildPivot(params.WS2M);
+  const tempPivot = buildPivot(params.T2M);
+  const rainPivot = buildPivot(params.PRECTOTCORR);
 
-  // 2) Pivot each map so rows are 3-day blocks by month-day
-  const windPivot   = buildPivot(wind3Day);
-  const tempPivot   = buildPivot(temp3Day);
-  const rainPivot   = buildPivot(rain3Day);
+  // Write unmodified daily CSVs
+  writeCsv('wind', windPivot);
+  writeCsv('temp', tempPivot);
+  writeCsv('rain', rainPivot);
 
-  // 3) Write only the 3-day grouped CSVs
-  writeCsv('wind3day', windPivot, true);
-  writeCsv('temp3day', tempPivot, true);
-  writeCsv('rain3day', rainPivot, true);
+  // Write smoothed 3-day CSVs
+  writeSmoothedCsv('wind', windPivot);
+  writeSmoothedCsv('temp', tempPivot);
+  writeSmoothedCsv('rain', rainPivot);
 
-  console.log('\n3-day grouped export complete.');
+  console.log('\nAll exports complete.');
 })();
