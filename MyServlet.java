@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.Path;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -6,6 +7,11 @@ import java.time.LocalTime;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
 
 @WebServlet("/MyServlet")
 public class MyServlet extends HttpServlet {
@@ -23,6 +29,24 @@ public class MyServlet extends HttpServlet {
             LocalTime javaVariable4 = time;
             // Send response back to client
             String filename = "user_" + System.currentTimeMillis() + ".json";
+            Path directoryPath = Paths.get("C:/Users/chris/No_Packets/jsonData");
+
+            try {
+                // Delete ALL files in the directory
+                Files.list(directoryPath)
+                    .filter(Files::isRegularFile)
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                            System.out.println("Deleted: " + path.getFileName());
+                        } catch (IOException e) {
+                            System.out.println("Failed to delete: " + path.getFileName());
+                        }
+                    });
+                
+            } catch (IOException e) {
+                System.out.println("Error accessing directory: " + e.getMessage());
+            }
             JsonCreator.createUserJson(filename, javaVariable, javaVariable2, javaVariable3, javaVariable4);
             // Set attributes for JSP
             request.setAttribute("country", Country);
