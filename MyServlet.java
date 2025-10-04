@@ -28,7 +28,7 @@ public class MyServlet extends HttpServlet {
             LocalDate javaVariable3 = date;
             LocalTime javaVariable4 = time;
             // Send response back to client
-            String filename = "user_" + System.currentTimeMillis() + ".json";
+            String filename = "user_data.json";
             Path directoryPath = Paths.get("C:/Users/chris/No_Packets/jsonData");
 
             try {
