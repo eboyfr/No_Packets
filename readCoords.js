@@ -1,24 +1,33 @@
+// readCoords.js
+
 const fs = require('fs');
 const path = require('path');
 
 function getCoordsFromFile(filePath = 'coordinates.json') {
-  try {
-    const raw = fs.readFileSync(path.resolve(__dirname, filePath), 'utf8');
-    const data = JSON.parse(raw);
-    if (data.results && data.results.length > 0) {
-      const { lat, lng } = data.results[0].geometry.location;
-      return { lat, lng };
-    } else {
-      throw new Error('No results array or empty results');
-    }
-  } catch (err) {
-    console.error('Error reading coordinates.json:', err.message);
-    return null;
+  const fullPath = path.resolve(__dirname, filePath);
+  if (!fs.existsSync(fullPath)) {
+    console.error('❌ File not found:', fullPath);
+    process.exit(1);
   }
+
+  const raw = fs.readFileSync(fullPath, 'utf8');
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (err) {
+    console.error('❌ JSON parse error:', err.message);
+    process.exit(1);
+  }
+
+  if (!Array.isArray(data.results) || data.results.length === 0) {
+    console.error('❌ No results in JSON');
+    process.exit(1);
+  }
+
+  const { lat, lng } = data.results[0].geometry.location;
+  return { lat, lng };
 }
 
 // Usage
-const coords = getCoordsFromFile();
-if (coords) {
-  console.log(`Latitude: ${coords.lat}, Longitude: ${coords.lng}`);
-}
+const { lat, lng } = getCoordsFromFile();
+console.log(`Latitude: ${lat}, Longitude: ${lng}`);
