@@ -1,4 +1,4 @@
-// nasaTemp.js
+// nasaWind.js
 
 const fs    = require('fs');
 const path  = require('path');
@@ -17,7 +17,7 @@ function formatDate(d) {
   return d.toISOString().slice(0,10).replace(/-/g,'');
 }
 
-async function fetchTemp() {
+async function fetchWind() {
   const { lat, lng } = getCoords();
   const today = new Date();
   const endDate   = formatDate(today);
@@ -25,14 +25,14 @@ async function fetchTemp() {
 
   const res = await axios.get('https://power.larc.nasa.gov/api/temporal/daily/point', {
     params: {
-      parameters: 'T2M', community: 'RE',
+      parameters: 'WS2M', community: 'RE',
       latitude: lat, longitude: lng,
       start: startDate, end: endDate,
       format: 'JSON', api_key: process.env.NASA_API_KEY
     }
   });
 
-  const data = res.data.properties.parameter.T2M;
+  const data = res.data.properties.parameter.WS2M;
   const found = Object.entries(data)
     .sort((a,b)=>b[0].localeCompare(a[0]))
     .find(([,v])=>v!==-999 && v!=null);
@@ -40,14 +40,4 @@ async function fetchTemp() {
   return found  // [date, value] or undefined
 }
 
-module.exports = fetchTemp;
-
-async function fetchYearlyDates(lat, lon, date, n){
-  results = [];
-  for(i=1; i<=n; ++i){
-    const v = await fetchTempRange(lat, lon, date-10000*i, date-10000*i);
-    console.log(v);
-    results.push(v);
-  }
-  return results;
-}
+module.exports = fetchWind;
