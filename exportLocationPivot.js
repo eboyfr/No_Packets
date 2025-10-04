@@ -73,54 +73,21 @@ function buildPivot(map) {
   return pivot;
 }
 
-// ── WRITE ORIGINAL DAILY CSVS ───────────────────────────────────────────────
+// ── WRITE DAILY CSVS ─────────────────────────────────────────────────────────
 function writeCsv(paramName, pivot) {
   const dir    = path.resolve(__dirname, 'JsonData');
   const file   = path.join(dir, `${locKey}_${paramName}.csv`);
   const sorted = Object.keys(pivot).sort((a,b) => {
     const [am,ad]=a.split('-').map(Number);
     const [bm,bd]=b.split('-').map(Number);
-    return am===bm?ad-bd:am-bm;
+    return am === bm ? ad - bd : am - bm;
   });
   const header = ['month-day', ...years].join(',');
-  const rows   = sorted.map(md => [md, ...years.map(y => pivot[md][y] ?? '0')].join(','));
+  const rows   = sorted.map(md =>
+    [md, ...years.map(y => pivot[md][y] ?? '0')].join(',')
+  );
   fs.writeFileSync(file, [header, ...rows].join('\n'));
   console.log(`✅ Wrote ${path.basename(file)}`);
-}
-
-// ── WRITE SMOOTHED 3-DAY CSVS ────────────────────────────────────────────────
-/**
- * Writes <locKey>_<paramName>3day.csv where each cell is
- * a centered 3-point average except 2024 retains raw values.
- */
-function writeSmoothedCsv(paramName, pivot) {
-  const dir      = path.resolve(__dirname, 'JsonData');
-  const filename = `${locKey}_${paramName}3day.csv`;
-  const file     = path.join(dir, filename);
-  const sorted   = Object.keys(pivot).sort((a,b) => {
-    const [am,ad]=a.split('-').map(Number);
-    const [bm,bd]=b.split('-').map(Number);
-    return am===bm?ad-bd:am-bm;
-  });
-
-  // Build matrix [row][col]
-  const matrix = sorted.map(md => years.map(y => Number(pivot[md]?.[y] ?? 0)));
-  const idx2024= years.indexOf('2024');
-
-  // Smooth columns except 2024
-  const smoothed = matrix.map((row,i) =>
-    row.map((val,j) => {
-      if (j === idx2024) return val.toFixed(3);
-      const prev = matrix[i-1]?.[j] ?? val;
-      const next = matrix[i+1]?.[j] ?? val;
-      return ((prev + val + next) / 3).toFixed(3);
-    })
-  );
-
-  const header = ['month-day', ...years].join(',');
-  const rows   = sorted.map((md,i) => [md, ...smoothed[i]].join(','));
-  fs.writeFileSync(file, [header, ...rows].join('\n'));
-  console.log(`✅ Wrote ${filename}`);
 }
 
 // ── MAIN ────────────────────────────────────────────────────────────────────
@@ -141,15 +108,10 @@ function writeSmoothedCsv(paramName, pivot) {
   const tempPivot = buildPivot(params.T2M);
   const rainPivot = buildPivot(params.PRECTOTCORR);
 
-  // Write unmodified daily CSVs
+  // Write only the daily CSVs
   writeCsv('wind', windPivot);
   writeCsv('temp', tempPivot);
   writeCsv('rain', rainPivot);
 
-  // Write smoothed 3-day CSVs
-  writeSmoothedCsv('wind', windPivot);
-  writeSmoothedCsv('temp', tempPivot);
-  writeSmoothedCsv('rain', rainPivot);
-
-  console.log('\nAll exports complete.');
+  console.log('\nExport complete.');
 })();
