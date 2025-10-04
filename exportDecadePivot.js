@@ -104,10 +104,10 @@ function writeCsv(filename, pivot, zeroFill = false) {
     const tempPivot = buildPivot(params.T2M);
     const rainPivot = buildPivot(params.PRECTOTCORR);
 
-    // Write out CSVs
-    writeCsv('wind.csv', windPivot, false);
-    writeCsv('temp.csv',  tempPivot, false);
-    writeCsv('rain.csv',  rainPivot, true);  // zero-fill missing rain entries
+    // Write out CSVs, zero-filling missing values for all
+    writeCsv('wind.csv', windPivot, true);
+    writeCsv('temp.csv',  tempPivot, true);
+    writeCsv('rain.csv',  rainPivot, true);
 
     console.log('All files written successfully.');
   } catch (err) {
