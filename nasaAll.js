@@ -1,38 +1,41 @@
 // nasaAll.js
-
-require('dotenv').config({
-  path: require('path').resolve(__dirname, '.env'),
-  quiet: true
-});
-
-const fetchWind = require('./nasaWind');
+require('dotenv').config({ path: './.env', quiet: true });
 const fetchTemp = require('./nasaTemp');
 const fetchRain = require('./nasaRain');
+const fetchWind = require('./nasaWind');
+
+function fmt(d) { return d.toISOString().slice(0,10).replace(/-/g,''); }
 
 (async () => {
-  try {
-    const windRec = await fetchWind();
-    const tempRec = await fetchTemp();
-    const rainRec = await fetchRain();
+  // Example: user-specified range
+  const start = '20251001';
+  const end   = '20251004';
 
-    if (!windRec || !tempRec || !rainRec) {
-      console.error('❌ Could not retrieve all parameters.');
-      process.exit(1);
-    }
+  console.log(`⏳ Fetching data from ${start} to ${end}`);
+  const [temps, rains, winds] = await Promise.all([
+    fetchTemp({ start, end }),
+    fetchRain({ start, end }),
+    fetchWind({ start, end })
+  ]);
 
-    // Ensure same date or pick most recent overlapping date
-    const dates = [windRec[0], tempRec[0], rainRec[0]];
-    const date  = dates.sort((a,b)=>b.localeCompare(a)).find(d =>
-      windRec[0]===d && tempRec[0]===d && rainRec[0]===d
-    ) || dates[0];
+  // e.g. take the most recent date present in all three lists
+  const dates = [temps[0]?.date, rains[0]?.date, winds[0]?.date]
+    .filter(Boolean)
+    .sort().reverse();
+  const date = dates.find(d =>
+    temps.some(e=>e.date===d) &&
+    rains.some(e=>e.date===d) &&
+    winds.some(e=>e.date===d)
+  );
 
-    const wind = windRec[0]===date ? windRec[1] : 'N/A';
-    const temp = tempRec[0]===date ? tempRec[1] : 'N/A';
-    const rain = rainRec[0]===date ? rainRec[1] : 'N/A';
-
-    console.log(`📅 ${date} → 💨 ${wind} m/s | 🌡️ ${temp} °C | 🌧️ ${rain} mm`);
-  } catch (err) {
-    console.error('❌ Error in nasaAll:', err.message);
-    process.exit(1);
+  if (!date) {
+    console.log('❌ No overlapping data in that range');
+    return;
   }
+
+  const temp = temps.find(e=>e.date===date).value;
+  const rain = rains.find(e=>e.date===date).value;
+  const wind = winds.find(e=>e.date===date).value;
+
+  console.log(`📅 ${date} → 💨 ${wind} m/s | 🌡️ ${temp}°C | 🌧️ ${rain} mm`);
 })();

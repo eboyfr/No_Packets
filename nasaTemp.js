@@ -17,27 +17,21 @@ function formatDate(d) {
   return d.toISOString().slice(0,10).replace(/-/g,'');
 }
 
-async function fetchTemp() {
+async function fetchTemp({ start, end }) {
   const { lat, lng } = getCoords();
-  const today = new Date();
-  const endDate   = formatDate(today);
-  const startDate = formatDate(new Date(today.setDate(today.getDate() - 6)));
-
   const res = await axios.get('https://power.larc.nasa.gov/api/temporal/daily/point', {
     params: {
       parameters: 'T2M', community: 'RE',
       latitude: lat, longitude: lng,
-      start: startDate, end: endDate,
+      start, end,
       format: 'JSON', api_key: process.env.NASA_API_KEY
     }
   });
-
   const data = res.data.properties.parameter.T2M;
-  const found = Object.entries(data)
-    .sort((a,b)=>b[0].localeCompare(a[0]))
-    .find(([,v])=>v!==-999 && v!=null);
-
-  return found  // [date, value] or undefined
+  return Object.entries(data)
+    .map(([date,val]) => ({ date, value: val }))
+    .filter(e => e.value !== -999)
+    .sort((a,b)=>b.date.localeCompare(a.date));
 }
 
 module.exports = fetchTemp;

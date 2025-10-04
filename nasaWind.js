@@ -3,41 +3,53 @@
 const fs    = require('fs');
 const path  = require('path');
 const axios = require('axios');
-require('dotenv').config({
-  path: require('path').resolve(__dirname, '.env'),
-  quiet: true
-});
+require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
 function getCoords() {
-  const data = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'coordinates.json')));
+  const file = path.resolve(__dirname, 'coordinates.json');
+  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
   return data.results[0].geometry.location;  // { lat, lng }
 }
 
-function formatDate(d) {
+function fmt(d) {
   return d.toISOString().slice(0,10).replace(/-/g,'');
 }
 
-async function fetchWind() {
+async function fetchWind({ start, end }) {
   const { lat, lng } = getCoords();
-  const today = new Date();
-  const endDate   = formatDate(today);
-  const startDate = formatDate(new Date(today.setDate(today.getDate() - 6)));
-
-  const res = await axios.get('https://power.larc.nasa.gov/api/temporal/daily/point', {
-    params: {
-      parameters: 'WS2M', community: 'RE',
-      latitude: lat, longitude: lng,
-      start: startDate, end: endDate,
-      format: 'JSON', api_key: process.env.NASA_API_KEY
+  const res = await axios.get(
+    'https://power.larc.nasa.gov/api/temporal/daily/point',
+    {
+      params: {
+        parameters: 'WS2M',    // wind speed at 2 m
+        community: 'RE',
+        latitude: lat,
+        longitude: lng,
+        start,
+        end,
+        format: 'JSON',
+        api_key: process.env.NASA_API_KEY
+      }
     }
-  });
+  );
 
-  const data = res.data.properties.parameter.WS2M;
-  const found = Object.entries(data)
-    .sort((a,b)=>b[0].localeCompare(a[0]))
-    .find(([,v])=>v!==-999 && v!=null);
+  // Defensive checks
+  if (!res.data || !res.data.properties || !res.data.properties.parameter) {
+    console.error('Unexpected API response structure:', JSON.stringify(res.data, null, 2));
+    throw new Error('Missing properties.parameter block in POWER API response');
+  }
+  
+  const winds = res.data.properties.parameter.WS2M;
+  if (!winds) {
+    console.error('WS2M block not found. Available parameters:', Object.keys(res.data.properties.parameter));
+    throw new Error('WS2M parameter missing from API response');
+  }
 
-  return found  // [date, value] or undefined
+  // Return entries sorted newest → oldest
+  return Object.entries(winds)
+    .map(([date, value]) => ({ date, value }))
+    .filter(e => e.value !== -999 && e.value != null)
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 module.exports = fetchWind;
