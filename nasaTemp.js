@@ -35,3 +35,13 @@ async function fetchTemp({ start, end }) {
 }
 
 module.exports = fetchTemp;
+
+async function fetchYearlyDates(lat, lon, date, n){
+  results = [];
+  for(i=1; i<=n; ++i){
+    const v = await fetchTempRange(lat, lon, date-10000*i, date-10000*i);
+    console.log(v);
+    results.push(v);
+  }
+  return results;
+}
