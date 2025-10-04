@@ -23,7 +23,7 @@ for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
 // ── LOAD USER DATA ──────────────────────────────────────────────────────────
 // JsonData/user_data.json is a single object:
 // { "country": "...", "city": "...", "date": "...", "time": "..." }
-const userDataPath = path.resolve(__dirname, 'JsonData', 'user_data.json');
+const userDataPath = path.resolve(__dirname, 'jsonData', 'user_data.json');
 if (!fs.existsSync(userDataPath)) {
   console.error('❌ Missing JsonData/user_data.json');
   process.exit(1);
