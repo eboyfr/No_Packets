@@ -90,10 +90,11 @@ function threeDayAverages(dailyMap) {
   return avgMap;
 }
 
-// ── WRITE CSV WITH SMOOTHING ────────────────────────────────────────────────
+// ── WRITE CSV WITH CONDITIONAL SMOOTHING ────────────────────────────────────
 /**
- * Writes a pivoted CSV where each cell is the average of its value,
- * the previous row’s value, and the next row’s value in the same column.
+ * Writes a pivoted CSV where each cell is:
+ * - the raw value for the 2024 column
+ * - the centered 3-point average for all other years
  */
 function writeCsv(paramName, pivot) {
   const dir    = path.resolve(__dirname, 'JsonData');
@@ -104,14 +105,21 @@ function writeCsv(paramName, pivot) {
     return am===bm?ad-bd:am-bm;
   });
 
-  // Build a 2D array of values [row][col]
+  // Build raw matrix [row][col]
   const matrix = sorted.map(md =>
     years.map(y => Number(pivot[md]?.[y] ?? 0))
   );
 
-  // Apply centered moving average down each column
+  // Identify the index of the 2024 column
+  const idx2024 = years.indexOf('2024');
+
+  // Apply smoothing except for 2024 column
   const smoothed = matrix.map((row, i) =>
     row.map((val, j) => {
+      if (j === idx2024) {
+        // keep raw for 2024
+        return val.toFixed(3);
+      }
       const prev = matrix[i-1]?.[j] ?? val;
       const next = matrix[i+1]?.[j] ?? val;
       return ((prev + val + next) / 3).toFixed(3);
@@ -124,8 +132,9 @@ function writeCsv(paramName, pivot) {
     [md, ...smoothed[i]].join(',')
   );
   fs.writeFileSync(file, [header, ...rows].join('\n'));
-  console.log(`✅ Wrote smoothed ${path.basename(file)}`);
+  console.log(`✅ Wrote ${path.basename(file)}`);
 }
+
 
 // ── MAIN ────────────────────────────────────────────────────────────────────
 ;(async () => {
