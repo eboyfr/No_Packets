@@ -21,6 +21,8 @@
     <h2>City: ${city}</h2>
     <h2>Date: ${date}</h2>
     <h2>Time: ${time}</h2>
+    <br><br>
+    <button onclick="window.location.href='main.html'">download</button>
 </body>
 
 

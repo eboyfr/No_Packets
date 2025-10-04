@@ -18,7 +18,7 @@ public class JsonCreator {
             jsonObject.put("time", time.toString());
             
             
-            String filePath = "C:/Users/chris/No_Packets/" + filename;
+            String filePath = "C:/Users/chris/No_Packets/jsonData/" + filename;
 
             mapper.writerWithDefaultPrettyPrinter()
                   .writeValue(new File(filePath), jsonObject);

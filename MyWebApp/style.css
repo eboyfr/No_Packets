@@ -5,7 +5,11 @@ html, body {
 
 }
 
-
+select {
+  width: auto;              /* don't force full width */
+  min-width: 100px;         /* optional: prevents being too tiny */
+  max-width: 100%;          /* keep it responsive */
+}
 
 body {
   font-family: Arial, sans-serif;
@@ -45,8 +49,3 @@ body {
   padding: 0;
 }
 
-select {
-  width: auto;              /* don't force full width */
-  min-width: 100px;         /* optional: prevents being too tiny */
-  max-width: 100%;          /* keep it responsive */
-}
