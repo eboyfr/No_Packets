@@ -1,47 +1,60 @@
-const axios = require('axios');
+// geocode.js
 
-if (!process.env.GOOGLE_MAPS_API_KEY) {
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
+// Verify API key
+const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+if (!API_KEY) {
   console.error('❌ GOOGLE_MAPS_API_KEY environment variable is not set');
   process.exit(1);
 }
 
-const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-const GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
-
-/**
- * Convert a place name or address into coordinates.
- * @param {string} place
- * @returns {Promise<{ latitude: number, longitude: number, formatted_address: string }>}
- */
-async function getCoordinates(place) {
-  try {
-    const response = await axios.get(GEOCODE_URL, {
-      params: { address: place, key: API_KEY },
-      timeout: 10000
-    });
-    const data = response.data;
-
-    if (data.status === 'OK' && data.results.length) {
-      const { lat, lng } = data.results[0].geometry.location;
-      const formatted = data.results[0].formatted_address;
-      return { latitude: lat, longitude: lng, formatted_address: formatted };
-    }
-
-    throw new Error(`Geocoding failed: ${data.status}`);
-  } catch (err) {
-    throw new Error(`Request error: ${err.message}`);
-  }
+// Fetch full Geocoding response
+async function geocode(address) {
+  const { data } = await axios.get(
+    'https://maps.googleapis.com/maps/api/geocode/json',
+    { params: { address, key: API_KEY } }
+  );
+  if (!data.results.length) throw new Error('No results for address');
+  return data;
 }
 
-// Example usage
+// Update .env with new variables
+function updateEnv(vars) {
+  const envPath = path.resolve(__dirname, '.env');
+  const lines = fs.existsSync(envPath)
+    ? fs.readFileSync(envPath, 'utf8').split(/\r?\n/)
+    : [];
+  const map = Object.fromEntries(lines.filter(Boolean).map(l => l.split('=')));
+  Object.assign(map, vars);
+  fs.writeFileSync(
+    envPath,
+    Object.entries(map).map(([k, v]) => `${k}=${v}`).join('\n') + '\n',
+    'utf8'
+  );
+}
+
+// Main logic
 (async () => {
+  const address = process.argv[2] ||
+    '1600 Amphitheatre Parkway, Mountain View, CA';
   try {
-    const place = process.argv[2] || 'Eiffel Tower, Paris';
-    const { latitude, longitude, formatted_address } = await getCoordinates(place);
-    console.log(`✅ ${formatted_address}`);
-    console.log(`📍 Latitude: ${latitude}, Longitude: ${longitude}`);
-  } catch (error) {
-    console.error(`❌ ${error.message}`);
+    const data = await geocode(address);
+
+    // Write the raw JSON response
+    const outPath = path.resolve(__dirname, 'coordinates.json');
+    fs.writeFileSync(outPath, JSON.stringify(data, null, 2), 'utf8');
+    console.log(`✅ Wrote full response to ${outPath}`);
+
+    // Extract lat/lng and update .env
+    const { lat, lng } = data.results[0].geometry.location;
+    updateEnv({ DEFAULT_LAT: lat, DEFAULT_LNG: lng });
+    console.log(`Lat: ${lat}, Lng: ${lng} → exported and saved to .env`);
+  } catch (err) {
+    console.error('❌ Geocoding failed:', err.message);
     process.exit(1);
   }
 })();
