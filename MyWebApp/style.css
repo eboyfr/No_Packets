@@ -1,0 +1,44 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+}
+
+body {
+  font-family: Arial, sans-serif;
+  /* Background image (1920x1080) */
+  
+  background-image: url('sources/photo/mainbackground.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  
+  min-height: 100vh;
+}
+
+/* Questionbox styling. */
+#questionbox {
+
+    /* blur background effect */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+
+  /* center and flex according to screen */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+
+  /* size and position */
+  width: 350px;
+  height: 320px;
+  padding: 0;
+}

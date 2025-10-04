@@ -1,5 +1,7 @@
 import java.io.*;
+import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -13,16 +15,19 @@ public class MyServlet extends HttpServlet {
             String Country = request.getParameter("country");
             String City = request.getParameter("city");
             LocalDate date = LocalDate.parse(request.getParameter("date"));
+            LocalTime time = LocalTime.parse(request.getParameter("time"));
             // Assign it to a Java variable
             String javaVariable = Country;
             String javaVariable2 = City;
             LocalDate javaVariable3 = date;
+            LocalTime javaVariable4 = time;
             // Send response back to client
             response.setContentType("text/html");
             PrintWriter out = response.getWriter();
             out.println("<h2>Country: " + javaVariable + "</h2>");
             out.println("<h2>City: " + javaVariable2 + "</h2>");
             out.println("<h2>Date: " + javaVariable3 + "</h2>");
+            out.println("<h2>Time: " + javaVariable4 + "</h2>");
         } catch (Exception e) {
             System.err.println("Error occurredbb: " + e.getMessage());
             e.printStackTrace();
