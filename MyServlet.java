@@ -54,6 +54,15 @@ public class MyServlet extends HttpServlet {
             request.setAttribute("date", date);
             request.setAttribute("time", time);
 
+            //JsonFileReader jsonReader = new JsonFileReader();
+            JsonFileReader.readWeatherData();
+            //jsonReader.main(null); // Call the main method to read the JSON file
+            Double rainFall = JsonFileReader.getRainFall();
+            Double temperature = JsonFileReader.getTemperature();
+            Double windSpeed = JsonFileReader.getWindSpeed();
+            request.setAttribute("rainFall", rainFall);
+            request.setAttribute("temperature", temperature);
+            request.setAttribute("windSpeed", windSpeed);
             // Forward to view.jsp
             RequestDispatcher dispatcher = request.getRequestDispatcher("view.jsp");
             dispatcher.forward(request, response);
@@ -87,5 +96,20 @@ public class MyServlet extends HttpServlet {
     //}
 }
 
+public static void main(String[] args) {
+    JsonFileReader jsonReader = new JsonFileReader();
+    try {
+        jsonReader.main(null); // Call the main method to read the JSON file
+        Double rainFall = JsonFileReader.getRainFall();
+        Double temperature = JsonFileReader.getTemperature();
+        Double windSpeed = JsonFileReader.getWindSpeed();
+        System.out.println("Rain Fall: " + rainFall);
+        System.out.println("Temperature: " + temperature);
+        System.out.println("Wind Speed: " + windSpeed);
+    } catch (IOException e) {
+        System.err.println("Error occurred: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
 
 }

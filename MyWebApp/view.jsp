@@ -23,6 +23,10 @@
     <h2>Date: ${date}</h2>
     <h2>Time: ${time}</h2>
     <br><br>
+    <h2>Rain Fall: ${rainFall}</h2>
+    <h2>Temperature: ${temperature}</h2>
+    <h2>Wind Speed: ${windSpeed}</h2>
+    
     <button onclick="window.location.href='main.html'">download</button>
 </body>
 
