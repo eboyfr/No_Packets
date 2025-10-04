@@ -24,17 +24,17 @@ for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
 // ── LOCATIONS WITH HARD-CODED COORDS ────────────────────────────────────────
 // Define up to 10 locations with unique keys and lat/lon
 const locations = [
-  { key: 'Omsk, Russian Federation',    lat: 54.99244, lon: 73.36859},
-  { key: 'Lattakia, Syria', lat: 35.516666666666666, lon: 35.78333333333333 },
-  { key: 'San Luis Potosí, Mexico',  lat: 22.14982, lon: -100.97916 },
-  { key: 'Serang, Indonesia', lat: -6.11528, lon: 106.15417 },
-  { key: 'Brazzaville, Congo', lat: -4.26613, lon: 15.28318 },
-  { key: 'Cotonou, Benin', lat:  6.36536, lon: 2.41833 },
-  { key: 'Toamasina, Madagascar',    lat:  -18.154999999999998, lon: 49.41 },
-  { key: 'Khartoum, Sudan, The Republic of', lat: 15.55177, lon: 32.53241 },
-  { key: 'Multan, Pakistan',  lat: 30.19679, lon: 71.47824 },
-  { key: 'Hirakata, Japan',lat: 34.81666666666667, lon: 135.65 }
-];
+{ key: 'Reykjavik_Iceland',    lat: 64.1466,  lon: -21.9426  },
+  { key: 'Valparaiso_Chile',     lat: -33.0472, lon: -71.6127  },
+  { key: 'Tallinn_Estonia',      lat: 59.4370,  lon: 24.7536   },
+  { key: 'Quito_Ecuador',        lat: -0.1807,  lon: -78.4678  },
+  { key: 'Ulaanbaatar_Mongolia', lat: 47.8864,  lon: 106.9057  },
+  { key: 'Luanda_Angola',        lat: -8.8390,  lon: 13.2894   },
+  { key: 'Wellington_NZ',        lat: -41.2865, lon: 174.7762  },
+  { key: 'Helsinki_Finland',     lat: 60.1699,  lon: 24.9384   },
+  { key: 'Karachi_Pakistan',     lat: 24.8607,  lon: 67.0011   },
+  { key: 'Vienna_Austria',       lat: 48.2082,  lon: 16.3738   }
+]
 
 // ── FETCH NASA POWER DATA ────────────────────────────────────────────────────
 async function fetchParams(lat, lon) {
