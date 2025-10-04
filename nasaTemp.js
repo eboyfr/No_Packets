@@ -41,6 +41,16 @@ async function fetchTempRange(lat, lon, start, end) {
   return res.data.properties.parameter.T2M;
 }
 
+async function fetchYearlyDates(lat, lon, date, n){
+  results = [];
+  for(i=1; i<=n; ++i){
+    const v = await fetchTempRange(lat, lon, date-10000*i, date-10000*i);
+    console.log(v);
+    results.push(v);
+  }
+  return results;
+}
+
 (async () => {
   try {
     const { lat, lon } = getCoords();
@@ -54,6 +64,7 @@ async function fetchTempRange(lat, lon, start, end) {
     const entries = Object.entries(temps).sort((a,b) => b[0].localeCompare(a[0]));
     const valid = entries.find(([_, v]) => v !== -999 && v != null);
 
+    console.log(fetchYearlyDates(lat, lon, endDate, 10));
     if (!valid) {
       console.log(`❌ No valid T2M data in range.`);
     } else {
