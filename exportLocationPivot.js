@@ -6,7 +6,7 @@ const axios = require('axios');
 require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
 // ── CONFIGURE RANGE HERE ─────────────────────────────────────────────────────
-const startDate = '20140101';
+const startDate = '20040101';
 const endDate   = '20241231';
 
 // ── DERIVE YEARS ─────────────────────────────────────────────────────────────
