@@ -57,12 +57,12 @@ public class MyServlet extends HttpServlet {
             //JsonFileReader jsonReader = new JsonFileReader();
             JsonFileReader.readWeatherData();
             //jsonReader.main(null); // Call the main method to read the JSON file
-            Double rainFall = JsonFileReader.getRainFall();
+            Double rain = JsonFileReader.getRainFall();
             Double temperature = JsonFileReader.getTemperature();
-            Double windSpeed = JsonFileReader.getWindSpeed();
-            request.setAttribute("rainFall", rainFall);
+            Double wind = JsonFileReader.getWindSpeed();
+            request.setAttribute("rain", rain);
             request.setAttribute("temperature", temperature);
-            request.setAttribute("windSpeed", windSpeed);
+            request.setAttribute("wind", wind);
             // Forward to view.jsp
             RequestDispatcher dispatcher = request.getRequestDispatcher("view.jsp");
             dispatcher.forward(request, response);
@@ -100,12 +100,12 @@ public static void main(String[] args) {
     JsonFileReader jsonReader = new JsonFileReader();
     try {
         jsonReader.main(null); // Call the main method to read the JSON file
-        Double rainFall = JsonFileReader.getRainFall();
+        Double rain = JsonFileReader.getRainFall();
         Double temperature = JsonFileReader.getTemperature();
-        Double windSpeed = JsonFileReader.getWindSpeed();
-        System.out.println("Rain Fall: " + rainFall);
+        Double wind = JsonFileReader.getWindSpeed();
+        System.out.println("Rain Fall: " + rain);
         System.out.println("Temperature: " + temperature);
-        System.out.println("Wind Speed: " + windSpeed);
+        System.out.println("Wind Speed: " + wind);
     } catch (IOException e) {
         System.err.println("Error occurred: " + e.getMessage());
         e.printStackTrace();

@@ -44,9 +44,9 @@ public static void readWeatherData() {
             jsonNode.fieldNames().forEachRemaining(field -> System.out.println("Field: " + field));
             
             // Read values with defaults
-            rainFall = jsonNode.has("rainFall") ? jsonNode.get("rainFall").asDouble() : 0.0;
+            rainFall = jsonNode.has("rain") ? jsonNode.get("rain").asDouble() : 0.0;
             temperature = jsonNode.has("temperature") ? jsonNode.get("temperature").asDouble() : 0.0;
-            windSpeed = jsonNode.has("windSpeed") ? jsonNode.get("windSpeed").asDouble() : 0.0;
+            windSpeed = jsonNode.has("wind") ? jsonNode.get("wind").asDouble() : 0.0;
             
             System.out.println("Loaded - Rain: " + rainFall + ", Temp: " + temperature + ", Wind: " + windSpeed);
             
@@ -89,9 +89,9 @@ public static void readWeatherData() {
             // System.out.println("=========================");
             
             // Safely read values with null checks
-            rainFall = jsonNode.has("rainFall") ? jsonNode.get("rainFall").asDouble() : null;
+            rainFall = jsonNode.has("rain") ? jsonNode.get("rain").asDouble() : null;
             temperature = jsonNode.has("temperature") ? jsonNode.get("temperature").asDouble() : null;
-            windSpeed = jsonNode.has("windSpeed") ? jsonNode.get("windSpeed").asDouble() : null;
+            windSpeed = jsonNode.has("wind") ? jsonNode.get("wind").asDouble() : null;
             
         }catch (IOException e) {
                 System.out.println("Error reading JSON file: " + e.getMessage());
