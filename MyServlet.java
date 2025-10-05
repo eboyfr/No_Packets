@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.nio.file.Path;
 import java.sql.Time;
@@ -15,6 +16,7 @@ import java.io.IOException;
 
 @WebServlet("/MyServlet")
 public class MyServlet extends HttpServlet {
+
     public void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             // Retrieve input from HTML form
@@ -34,16 +36,16 @@ public class MyServlet extends HttpServlet {
             try {
                 // Delete ALL files in the directory
                 Files.list(directoryPath)
-                    .filter(Files::isRegularFile)
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                            System.out.println("Deleted: " + path.getFileName());
-                        } catch (IOException e) {
-                            System.out.println("Failed to delete: " + path.getFileName());
-                        }
-                    });
-                
+                        .filter(Files::isRegularFile)
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                                System.out.println("Deleted: " + path.getFileName());
+                            } catch (IOException e) {
+                                System.out.println("Failed to delete: " + path.getFileName());
+                            }
+                        });
+
             } catch (IOException e) {
                 System.out.println("Error accessing directory: " + e.getMessage());
             }
@@ -64,7 +66,20 @@ public class MyServlet extends HttpServlet {
             request.setAttribute("temperature", temperature);
             request.setAttribute("wind", wind);
             // Forward to view.jsp
-            RequestDispatcher dispatcher = request.getRequestDispatcher("view.jsp");
+            if (temperature > 27.0) { // if temperature is greater than 27 degrees Celsius
+                RequestDispatcher dispatcher = request.getRequestDispatcher("veryhot.jsp");
+                dispatcher.forward(request, response);
+                // return; // Exit the method after forwarding
+            }else if (rain > 1000.0) { // if rainfall is greater than 1000 mm
+                RequestDispatcher dispatcher = request.getRequestDispatcher("verywet.jsp");
+                dispatcher.forward(request, response);
+                // return; // Exit the method after forwarding
+            }else if (wind > 60.0) {    // if wind speed is greater than 60 km/h
+                RequestDispatcher dispatcher = request.getRequestDispatcher("verywindy.jsp");
+                dispatcher.forward(request, response);
+                // return; // Exit the method after forwarding
+            }
+            RequestDispatcher dispatcher = request.getRequestDispatcher("veryhot.jsp");
             dispatcher.forward(request, response);
             //response.setContentType("text/html");
             //PrintWriter out = response.getWriter();
@@ -75,8 +90,8 @@ public class MyServlet extends HttpServlet {
         } catch (Exception e) {
             System.err.println("Error occurredbb: " + e.getMessage());
             e.printStackTrace();
-    }
-            //throws ServletException, IOException {
+        }
+        //throws ServletException, IOException {
         // need to install tomcat server to run this code
         // https://tomcat.apache.org/download-11.cgi
         // the binary -> core -> zipped
@@ -88,28 +103,27 @@ public class MyServlet extends HttpServlet {
 
         // // Assign it to a Java variable
         // String javaVariable = userInput;
-
         // // Send response back to client
         // response.setContentType("text/html");
         // PrintWriter out = response.getWriter();
         // out.println("<h2>You entered: " + javaVariable + "</h2>");
-    //}
-}
-
-public static void main(String[] args) {
-    JsonFileReader jsonReader = new JsonFileReader();
-    try {
-        jsonReader.main(null); // Call the main method to read the JSON file
-        Double rain = JsonFileReader.getRainFall();
-        Double temperature = JsonFileReader.getTemperature();
-        Double wind = JsonFileReader.getWindSpeed();
-        System.out.println("Rain Fall: " + rain);
-        System.out.println("Temperature: " + temperature);
-        System.out.println("Wind Speed: " + wind);
-    } catch (IOException e) {
-        System.err.println("Error occurred: " + e.getMessage());
-        e.printStackTrace();
+        //}
     }
-}
+
+    public static void main(String[] args) {
+        JsonFileReader jsonReader = new JsonFileReader();
+        try {
+            jsonReader.main(null); // Call the main method to read the JSON file
+            Double rain = JsonFileReader.getRainFall();
+            Double temperature = JsonFileReader.getTemperature();
+            Double wind = JsonFileReader.getWindSpeed();
+            System.out.println("Rain Fall: " + rain);
+            System.out.println("Temperature: " + temperature);
+            System.out.println("Wind Speed: " + wind);
+        } catch (IOException e) {
+            System.err.println("Error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
 }
