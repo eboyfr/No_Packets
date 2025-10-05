@@ -1,6 +1,11 @@
 import json
 import os
 
+import joblib
+import numpy as np
+import pandas as pd
+
+
 def write_weather_json(temp, rain, wind, directory='jsonData', filename='weather_data.json'):
     """
     Create a JSON file with temperature, rain, and wind values in the specified directory.
@@ -28,8 +33,20 @@ def write_weather_json(temp, rain, wind, directory='jsonData', filename='weather
 
 if __name__ == '__main__':
     # Example usage:
-    temperature_value = 24.0
-    rain_value = 10.2
-    wind_value = 6.9
+    data = pd.read_csv("jsonData/day_history.csv")
+    data = data.iloc[:, 1:]
+
+    temp_data = np.array([data.iloc[0]])
+    # print(temp_data)
+    rain_data = np.array([data.iloc[1]])
+    wind_data = np.array([data.iloc[2]])
+    # print(os.getcwd())
+    temp_model = joblib.load('temp_model.pkl')
+    rain_model = joblib.load('rain_model29_2.8.pkl')
+    wind_model = joblib.load('wind_model1.5_0.9.pkl')
+
+    temperature_value = temp_model.predict(temp_data)
+    rain_value = rain_model.predict(rain_data)
+    wind_value = wind_model.predict(wind_data)
 
     write_weather_json(temperature_value, rain_value, wind_value)
