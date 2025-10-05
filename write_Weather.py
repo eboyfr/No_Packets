@@ -32,21 +32,27 @@ def write_weather_json(temp, rain, wind, directory='jsonData', filename='weather
     print(f"Weather data written to '{filepath}'")
 
 if __name__ == '__main__':
-    # Example usage:
-    data = pd.read_csv("jsonData/day_history.csv")
-    data = data.iloc[:, 1:]
+    # Load history CSV (ensure correct folder name)
+    df = pd.read_csv('jsonData/day_history.csv')
+    # Drop the 'parameter' column
+    data = df.drop(columns=['parameter'])
 
-    temp_data = np.array([data.iloc[0]])
-    # print(temp_data)
-    rain_data = np.array([data.iloc[1]])
-    wind_data = np.array([data.iloc[2]])
-    # print(os.getcwd())
+    # Extract one-row arrays
+    temp_data = data.iloc[[0]].values
+    rain_data = data.iloc[[1]].values
+    wind_data = data.iloc[[2]].values
+
+    # Load models (ensure filenames match)
     temp_model = joblib.load('temp_model.pkl')
-    rain_model = joblib.load('rain_model29_2.8.pkl')
-    wind_model = joblib.load('wind_model1.5_0.9.pkl')
+    rain_model = joblib.load('rain_model_2.8.pkl')
+    wind_model = joblib.load('wind_model_0.9.pkl')
 
-    temperature_value = temp_model.predict(temp_data)
-    rain_value = rain_model.predict(rain_data)
-    wind_value = wind_model.predict(wind_data)
+    # Predict and extract scalars
+    temperature_value = float(temp_model.predict(temp_data)[0])
+    rain_value        = float(rain_model.predict(rain_data)[0])
+    wind_value        = float(wind_model.predict(wind_data)[0])
 
-    write_weather_json(temperature_value, rain_value, wind_value)
+    # Write JSON
+    write_weather_json(temperature_value, rain_value, wind_value,
+                       directory='JsonData', filename='weather_data.json')
+
