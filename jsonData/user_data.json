@@ -1,13 +1,5 @@
 {
-<<<<<<< HEAD
-  "country" : "Angola",
-  "city" : "Ambriz",
-  "date" : "2025-10-15",
-  "time" : "14:00"
-=======
-  "country" : "Philippines",
-  "city" : "Cebu",
-  "date" : "2025-10-29",
-  "time" : "00:00"
->>>>>>> d545084ace9b31e08e52d33c59d49d3dbd120087
+  "country" : "Bolivia",
+  "city" : "Buena Vista",
+  "date" : "2025-10-23"
 }
