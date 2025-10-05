@@ -6,12 +6,20 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            /* background-color: #f0f0f0; */
             margin: 20px;
         }
         h2 {
-            color: #333;
+            color: #faf7f7;
+            border: 2px solid rgb(15, 195, 87);
+            padding: 10px;
+            background-color: rgb(15, 195, 87);
+            width: fit-content;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
         }
+        
     </style>
     <link rel='stylesheet' type='text/css' media='screen' href='style.css'>
 </head>
