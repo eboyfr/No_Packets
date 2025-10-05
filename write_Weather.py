@@ -33,12 +33,14 @@ def write_weather_json(temp, rain, wind, directory='jsonData', filename='weather
 
 if __name__ == '__main__':
     # Example usage:
-    data = pd.read_csv()
+    data = pd.read_csv("jsonData/day_history.csv")
+    data = data.iloc[:, 1:]
 
-    temp_data = data.iloc[0]
-    rain_data = data.iloc[1]
-    wind_data = data.iloc[2]
-
+    temp_data = np.array([data.iloc[0]])
+    # print(temp_data)
+    rain_data = np.array([data.iloc[1]])
+    wind_data = np.array([data.iloc[2]])
+    # print(os.getcwd())
     temp_model = joblib.load('temp_model.pkl')
     rain_model = joblib.load('rain_model29_2.8.pkl')
     wind_model = joblib.load('wind_model1.5_0.9.pkl')
